@@ -1,2 +1,10 @@
 <meta charset="UTF-8">
-<h1>Super Awesome</h1>
+
+
+<% if(!username) { %>
+<form method="POST" action="/login"><input id="username" type='text' name="username" value="sign in"><button type = "submit" >Login</button></form>
+<% } %>
+
+<% if(username) { %>
+<form method="POST" action="/logout"><%= username %><button type = "submit" >Logout</button></form>
+<% } %>
