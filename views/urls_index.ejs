@@ -12,11 +12,11 @@
    <ul>
 
           <% for (let url in urls) { %>
-                <li><%= url %> : <%= urls[url] %> <a href='/urls/<%= url %>'> Edit </a></form> <form style="display: inline;" method="POST" action="/urls/<%= url %>/delete"><button type = "submit">Delete</button></form>  </li>
+                <li><%= url %> : <%= urls[url] %> <a href="/urls/<%= url %>"> Edit </a></form> <form style="display: inline;" method="POST" action="/urls/<%= url %>/delete"><button type = "submit">Delete</button></form>  </li>
           <% }; %>
 
 
-          <a href='#'> Link to shortening </a>
+          <a href="#"> Link to shortening </a>
       </ul>
 </body>
 </html>
