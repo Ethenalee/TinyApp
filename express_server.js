@@ -78,17 +78,25 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
+  let user_id = req.cookies['user_id'];
+
   let templateVars = {
     users,
     user_id: req.cookies['user_id']
   };
+  if(user_id) {
   res.render('urls_new', templateVars);
+  }
+  else {
+  res.redirect('/login');
+  }
 });
 
 app.post('/urls', (req, res) => {
   let shorK = generateRandomString(6);
   urlDatabase[shorK] = req.body.longURL;
   res.redirect('/urls/'+ shorK);
+
 });
 
 app.get('/urls/:id', (req, res) => {
