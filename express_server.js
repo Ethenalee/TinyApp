@@ -80,7 +80,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  let username = req.cookies["username"];
+  let username = req.cookies['username'];
   res.clearCookie('username');
   res.redirect('/urls/');
 });
@@ -94,10 +94,22 @@ app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let id = generateRandomString(10);
-  users[id] = {id: id,
+
+
+  if(email === "" || password === "") {
+    res.send("Error: 400");
+    }
+  else if (Object.values(users).some( x => email === email)) {
+    res.send("Error: 400");
+    }
+  else {
+    users[id] = {id: id,
     email: email,
     password: password};
-  res.redirect('/urls/');
+    res.cookie('user_id', id);
+    res.redirect('/urls/');
+  }
+console.log(users);
 });
 
 
