@@ -13,8 +13,8 @@ app.use(cookieParser());
 
 
 var urlDatabase = {
-  'b2xVn2': {longurl: 'http://www.lighthouselabs.ca'},
-  '9sm5xK': {longurl: 'http://www.google.com'}
+  'b2xVn2': {longurl: 'http://www.lighthouselabs.ca', user:''},
+  '9sm5xK': {longurl: 'http://www.google.com', user:''}
 };
 
 const users = {};
@@ -94,7 +94,12 @@ app.get('/urls/new', (req, res) => {
 
 app.post('/urls', (req, res) => {
   let shorK = generateRandomString(6);
-  urlDatabase[shorK] = req.body.longURL;
+
+  urlDatabase[shorK] = {
+    longurl: req.body.longurl,
+    user: req.cookies['user_id']
+  };
+
   res.redirect('/urls/'+ shorK);
 
 });
@@ -104,22 +109,28 @@ app.get('/urls/:id', (req, res) => {
   let longURL = urlDatabase[shortURL];
   let user_id = req.cookies['user_id'];
   let templateVars = { shortURL, longURL, users, user_id};
-  res.render('urls_show', templateVars);
+  if(urlDatabase[shortURL].user === user_id){
+    res.render('urls_show', templateVars);
+  }
+  else {
+    res.send('You do not have a permission to edit');
+  }
 });
 
 app.post('/urls/:id/delete', (req, res) => {
   let shorK = req.params.id;
-  delete urlDatabase[shorK];
-  res.redirect('/urls/');
+  let user_id = req.cookies['user_id'];
+  if(urlDatabase[shorK].user === user_id) {
+    delete urlDatabase[shorK];
+    res.redirect('/urls/');
+  }
+  else {
+    res.send('You do not have a permission to delete');
+  }
 });
 
 app.post('/urls/:id', (req, res) => {
   let shorK = req.params.id;
-  urlDatabase[shorK] = {
-    longurl: req.body.longurl,
-    user: req.cookies['user_id']
-  };
-  console.log(urlDatabase);
   res.redirect('/urls/');
 });
 
