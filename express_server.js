@@ -13,8 +13,8 @@ app.use(cookieParser());
 
 
 var urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'b2xVn2': {longurl: 'http://www.lighthouselabs.ca'},
+  '9sm5xK': {longurl: 'http://www.google.com'}
 };
 
 const users = {};
@@ -79,11 +79,11 @@ app.get('/urls', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   let user_id = req.cookies['user_id'];
-
   let templateVars = {
     users,
     user_id: req.cookies['user_id']
   };
+
   if(user_id) {
   res.render('urls_new', templateVars);
   }
@@ -115,7 +115,11 @@ app.post('/urls/:id/delete', (req, res) => {
 
 app.post('/urls/:id', (req, res) => {
   let shorK = req.params.id;
-  urlDatabase[shorK] = req.body.longurl;
+  urlDatabase[shorK] = {
+    longurl: req.body.longurl,
+    user: req.cookies['user_id']
+  };
+  console.log(urlDatabase);
   res.redirect('/urls/');
 });
 
