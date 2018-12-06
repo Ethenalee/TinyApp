@@ -28,6 +28,31 @@ function generateRandomString(length) {
     return text;
 }
 
+function bringID(email) {
+  let [userId] = Object.keys(users).filter(
+    userid =>
+    users[userid].email === email
+  );
+  return userId;
+}
+
+function bringPW(pw) {
+  let [userId] = Object.keys(users).filter(
+    userid =>
+    users[userid].password === pw
+  );
+  return userId;
+}
+
+function userthere(email) {
+  for (let userId in users) {
+    if(users[userId].email === email) {
+      return users[userId];
+    }
+  }
+  return false;
+}
+
 
 app.get('/', (req, res) => {
   res.send('Hello!');
@@ -44,13 +69,19 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase,
-  users, user_id: req.cookies['user_id']}
+  let templateVars = {
+    urls: urlDatabase,
+    users,
+    user_id: req.cookies['user_id']
+  }
   res.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  let templateVars = { users, user_id: req.cookies['user_id']};
+  let templateVars = {
+    users,
+    user_id: req.cookies['user_id']
+  };
   res.render('urls_new', templateVars);
 });
 
@@ -64,7 +95,7 @@ app.get('/urls/:id', (req, res) => {
   let shortURL = req.params.id;
   let longURL = urlDatabase[shortURL];
   let user_id = req.cookies['user_id'];
-  let templateVars = { shortURL, longURL, user, user_id};
+  let templateVars = { shortURL, longURL, users, user_id};
   res.render('urls_show', templateVars);
 });
 
@@ -80,11 +111,31 @@ app.post('/urls/:id', (req, res) => {
   res.redirect('/urls/');
 });
 
+app.get('/login', (req, res) => {
+  let templateVars = {
+    users,
+    user_id: req.cookies['user_id']
+  };
+
+  res.render('login', templateVars);
+});
 
 app.post('/login', (req, res) => {
-  let username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls/');
+  let email = req.body.email;
+  let password = req.body.password;
+  let id = bringID(email);
+  let pw = bringPW(password);
+
+  if (!id) {
+    res.status(403).send('Error 403: Email is not valid');
+  } else if (!pw) {
+    res.status(403).send('Error 403: password is not valid');
+  }
+  else {
+    res.cookie('user_id', id);
+    res.redirect('/');
+  }
+
 });
 
 app.post('/logout', (req, res) => {
@@ -101,28 +152,33 @@ app.post('/register', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let id = generateRandomString(10);
-
+  const userfind = userthere(email);
 
   if(email === '' || password === '') {
-    res.send('Error: 400');
+    res.status(400).send('Error: 400');
     }
-  else if (Object.values(users).some( x => email === email)) {
-    res.send('Error: 400');
+  else if (userfind) {
+    res.status(400).send('Error: 400 Email already exist');
     }
+
   else {
-    users[id] = {id: id,
-    email: email,
-    password: password};
+    users[id] = {
+      id: id,
+      email: email,
+      password: password
+    };
+
     res.cookie('user_id', id);
     res.redirect('/urls/');
   }
-console.log(users);
+
 });
 
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
 
 
