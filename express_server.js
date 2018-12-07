@@ -81,9 +81,9 @@ function urlsForUser(id) {
 
 // main page
 app.get('/', (req, res) => {
-  let user_id = req.session.user_id;
+  let userid = req.session.userid;
 
-  if(user_id) {
+  if(userid) {
     res.redirect('/urls')
   }
   else {
@@ -99,10 +99,10 @@ app.get('/hello', (req, res) => {
 
 // shorturl page can redirect to long url website when they are logged in
 app.get('/u/:shortURL', (req, res) => {
-  let user_id = req.session.user_id;
+  let userid = req.session.userid;
   let longURL = urlDatabase[req.params.shortURL].longURL;
 
-  if(user_id) {
+  if(userid) {
   res.redirect(longURL)
   }
   else {
@@ -118,14 +118,14 @@ app.get('/urls.json', (req, res) => {
 
 // page that can show all the urls you created
 app.get('/urls', (req, res) => {
-  let user_id = req.session.user_id;
+  let userid = req.session.userid;
   let templateVars = {
-    urls: urlsForUser(user_id),
+    urls: urlsForUser(userid),
     users,
-    user_id
+    userid
   }
 
-  if(user_id) {
+  if(userid) {
     res.render('urls_index', templateVars);
   }
   else {
@@ -135,13 +135,13 @@ app.get('/urls', (req, res) => {
 
 // page that you can create new url list
 app.get('/urls/new', (req, res) => {
-  let user_id = req.session.user_id;
+  let userid = req.session.userid;
   let templateVars = {
     users,
-    user_id
+    userid
   };
 
-  if(user_id) {
+  if(userid) {
   res.render('urls_new', templateVars);
   }
   else {
@@ -155,7 +155,7 @@ app.post('/urls', (req, res) => {
 
   urlDatabase[shorK] = {
     longURL: req.body.longURL,
-    user: req.session.user_id
+    user: req.session.userid
   };
 
   res.redirect('/urls/'+ shorK);
@@ -167,9 +167,14 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   let shortURL = req.params.id;
   let longURL = urlDatabase[shortURL];
-  let user_id = req.session.user_id;
-  let templateVars = { shortURL, longURL, users, user_id};
-  if(urlDatabase[shortURL].user === user_id){
+  let userid = req.session.userid;
+  let templateVars = { shortURL, longURL, users, userid};
+
+  if(!userid) {
+    res.send('You do not have a permission to access, please login');
+  }
+
+  else if(urlDatabase[shortURL].user === userid) {
     res.render('urls_show', templateVars);
   }
   else {
@@ -177,14 +182,24 @@ app.get('/urls/:id', (req, res) => {
   }
 });
 
+// updates the URL
+app.post('/urls/:id', (req, res) => {
+  let shortURL = req.params.id;
+  let longURL = urlDatabase[shortURL];
+  let userid = req.session.userid;
+
+
+
+  res.redirect('/urls/');
+});
 
 // delete url process
 app.post('/urls/:id/delete', (req, res) => {
   let shorK = req.params.id;
-  let user_id = req.session.user_id;
+  let userid = req.session.userid;
 
-  if(user_id) {
-      if (urlDatabase[shorK].user === user_id) {
+  if(userid) {
+      if (urlDatabase[shorK].user === userid) {
           delete urlDatabase[shorK];
           res.redirect('/urls/');
         }
@@ -198,18 +213,13 @@ app.post('/urls/:id/delete', (req, res) => {
 
 });
 
-// updates the URL
-app.post('/urls/:id', (req, res) => {
-  let shorK = req.params.id;
 
-  res.redirect('/urls/');
-});
 
 // login page
 app.get('/login', (req, res) => {
   let templateVars = {
     users,
-    user_id: req.session.user_id
+    userid: req.session.userid
   };
 
   res.render('login', templateVars);
@@ -228,7 +238,7 @@ app.post('/login', (req, res) => {
     res.status(403).send('Error 403: password is not valid');
   }
   else {
-    req.session.user_id = id;
+    req.session.userid = id;
     res.redirect('/urls');
   }
 
@@ -242,7 +252,7 @@ app.post('/logout', (req, res) => {
 
 //register page
 app.get('/register', (req, res) => {
-  let templateVars = { users, user_id: req.session.user_id};
+  let templateVars = { users, userid: req.session.userid};
   res.render('urls_email', templateVars);
 });
 
@@ -267,7 +277,7 @@ app.post('/register', (req, res) => {
       email: email,
       password: hashedPassword
     };
-    req.session.user_id = id;
+    req.session.userid = id;
     res.redirect('/urls/');
   }
 
