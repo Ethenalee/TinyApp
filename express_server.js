@@ -179,12 +179,14 @@ app.post('/login', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let id = bringID(email);
-  let pwtrue = bcrypt.compareSync(password, users[id].password);
+  ;
 
 
   if (!id) {
     res.status(403).send('Error 403: Email is not valid');
-  } else if (!pwtrue) {
+  }
+
+  else if (!bcrypt.compareSync(password, users[id].password)) {
     res.status(403).send('Error 403: password is not valid');
   }
   else {
