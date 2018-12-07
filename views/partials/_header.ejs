@@ -1,11 +1,11 @@
-<meta charset="UTF-8">
+<meta charset='UTF-8'>
 
 
 <% if(!user_id) { %>
-<a href="/login"> <button type = "submit">Login</button> </a>
-<a href="/register"> <button type = "submit">Register</button> </a>
+<a href='/login'> <button type = 'submit'>Login</button> </a>
+<a href='/register'> <button type = 'submit'>Register</button> </a>
 <% } %>
 
 <% if(user_id) { %>
-<form method="POST" action="/logout"><%= users[user_id].email %><button type = "submit" >Logout</button></form>
+<form method='POST' action='/logout'><%= users[user_id].email %><button type = 'submit' >Logout</button></form>
 <% } %>

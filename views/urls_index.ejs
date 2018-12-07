@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
   <title>TinyApp</title>
 </head>
@@ -12,11 +12,11 @@
    <ul>
 
           <% for (let url in urls) { %>
-                <li><%= url %> : <%= urls[url].longURL %> <a href="/urls/<%= url %>"> Edit </a></form> <form style="display: inline;" method="POST" action="/urls/<%= url %>/delete"><button type = "submit">Delete</button></form>  </li>
+                <li><%= url %> : <%= urls[url].longURL %> <a href='/urls/<%= url %>'> Edit </a></form> <form style='display: inline;' method='POST' action='/urls/<%= url %>/delete'><button type = 'submit'>Delete</button></form>  </li>
           <% }; %>
 
 
-          <a href="/urls/new"> Create a New Short Link </a>
+          <a href='/urls/new'> Create a New Short Link </a>
       </ul>
 </body>
 </html>
