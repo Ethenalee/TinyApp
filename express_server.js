@@ -170,6 +170,10 @@ app.get('/urls/:id', (req, res) => {
   let userid = req.session.userid;
   let templateVars = { shortURL, longURL, users, userid};
 
+  if (!(Object.keys(urlDatabase)).includes(shortURL)) {
+    res.status(404).send('Page is not exist');
+  }
+
   if(!userid) {
     res.send('You do not have a permission to access, please login');
   }
