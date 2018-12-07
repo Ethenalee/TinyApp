@@ -6,7 +6,7 @@ let PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
-
+const methodOverride = require('method-override')
 
 // using require
 app.set('view engine', 'ejs');
@@ -19,6 +19,7 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
 );
+app.use(methodOverride('_method'))
 
 
 // main database
@@ -198,7 +199,7 @@ app.post('/urls/:id', (req, res) => {
 });
 
 // delete url process
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id/delete', (req, res) => {
   let shorK = req.params.id;
   let userid = req.session.userid;
 

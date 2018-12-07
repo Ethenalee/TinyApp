@@ -12,7 +12,7 @@
    <ul>
 
           <% for (let url in urls) { %>
-                <li><%= url %> : <%= urls[url].longURL %> <a href='/urls/<%= url %>'> Edit </a></form> <form style='display: inline;' method='POST' action='/urls/<%= url %>/delete'><button type = 'submit'>Delete</button></form>  </li>
+                <li><%= url %> : <%= urls[url].longURL %> <a href='/urls/<%= url %>'> Edit </a></form> <form style='display: inline;' method='POST' action='/urls/<%= url %>/delete?_method=DELETE'><button type = 'submit'>Delete</button></form>  </li>
           <% }; %>
 
 
