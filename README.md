@@ -24,6 +24,7 @@ There are several reasons to use URL shortening. Often regular unshortened links
 - bcrypt
 - body-parser
 - cookie-session
+- method-override
 
 
 ## Development setup
