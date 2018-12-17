@@ -24,13 +24,13 @@ app.use(methodOverride('_method'))
 
 // main database
 var urlDatabase = {
-  'b2xVn2': {longURL: 'http://www.lighthouselabs.ca', user:'asdfsdf'},
-  '9sm5xK': {longURL: 'http://www.google.com', user:'asdfsdf'}
+  'b2xVn2': {longURL: 'http://www.lighthouselabs.ca', userId:'asdfsdf'},
+  '9sm5xK': {longURL: 'http://www.google.com', userId:'asdfsdf'}
 };
 
 // user database
 const users = {
-  asdfsdf: {
+  'asdfsdf': {
       id: 'asdfsdf',
       email: 'test@gmail.com',
       password: bcrypt.hashSync('1234', 10)
@@ -41,24 +41,24 @@ const users = {
 // random ID generate for server purpose
 function generateRandomString(length) {
   let text = '';
-    let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for(let i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
+  let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for(let i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
 }
 
 // bring ID matching with email
 function bringID(email) {
   let [userId] = Object.keys(users).filter(
-    userid =>
-    users[userid].email === email
+    userId =>
+    users[userId].email === email
   );
   return userId;
 }
 
 // matching existing ID
-function userthere(email) {
+function userThere(email) {
   for (let userId in users) {
     if(users[userId].email === email) {
       return users[userId];
@@ -68,11 +68,11 @@ function userthere(email) {
 }
 
 // generate object for each users urls
-function urlsForUser(id) {
+function urlsForUser(userId) {
   let urlslist = {}
-  for (let shork in urlDatabase) {
-    if(urlDatabase[shork].user === id) {
-      urlslist[shork] = urlDatabase[shork];
+  for (let shortkey in urlDatabase) {
+    if(urlDatabase[shortkey].userId === userId) {
+      urlslist[shortkey] = urlDatabase[shortkey];
     }
   }
 
@@ -82,9 +82,9 @@ function urlsForUser(id) {
 
 // main page
 app.get('/', (req, res) => {
-  let userid = req.session.userid;
+  let userId = req.session.userId;
 
-  if(userid) {
+  if(userId) {
     res.redirect('/urls')
   }
   else {
@@ -93,17 +93,13 @@ app.get('/', (req, res) => {
 
 });
 
-// hello page
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
 
 // shorturl page can redirect to long url website when they are logged in
 app.get('/u/:shortURL', (req, res) => {
-  let userid = req.session.userid;
+  let userId = req.session.userId;
   let longURL = urlDatabase[req.params.shortURL].longURL;
 
-  if(userid) {
+  if(userId) {
   res.redirect(longURL)
   }
   else {
@@ -119,14 +115,14 @@ app.get('/urls.json', (req, res) => {
 
 // page that can show all the urls you created
 app.get('/urls', (req, res) => {
-  let userid = req.session.userid;
+  let userId = req.session.userId;
   let templateVars = {
-    urls: urlsForUser(userid),
-    users,
-    userid
+    urls: urlsForUser(userId),
+    user: users[userId],
+    userId
   }
 
-  if(userid) {
+  if(userId) {
     res.render('urls_index', templateVars);
   }
   else {
@@ -136,13 +132,13 @@ app.get('/urls', (req, res) => {
 
 // page that you can create new url list
 app.get('/urls/new', (req, res) => {
-  let userid = req.session.userid;
+  let userId = req.session.userId;
   let templateVars = {
-    users,
-    userid
+    user: users[userId],
+    userId
   };
 
-  if(userid) {
+  if(userId) {
   res.render('urls_new', templateVars);
   }
   else {
@@ -152,14 +148,14 @@ app.get('/urls/new', (req, res) => {
 
 // generates a short URL, saves it, and associates it with the user
 app.post('/urls', (req, res) => {
-  let shorK = generateRandomString(6);
+  let shortKey = generateRandomString(6);
 
-  urlDatabase[shorK] = {
+  urlDatabase[shortKey] = {
     longURL: req.body.longURL,
-    user: req.session.userid
+    userId: req.session.userId
   };
 
-  res.redirect('/urls/'+ shorK);
+  res.redirect('/urls/'+ shortKey);
 
 });
 
@@ -168,18 +164,18 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   let shortURL = req.params.id;
   let longURL = urlDatabase[shortURL];
-  let userid = req.session.userid;
-  let templateVars = { shortURL, longURL, users, userid};
+  let userId = req.session.userId;
+  let templateVars = { shortURL, longURL, user: users[userId], userId};
 
   if (!(Object.keys(urlDatabase)).includes(shortURL)) {
     res.status(404).send('Page is not exist');
   }
 
-  if(!userid) {
+  if(!userId) {
     res.send('You do not have a permission to access, please login');
   }
 
-  else if(urlDatabase[shortURL].user === userid) {
+  else if(urlDatabase[shortURL].userId === userId) {
     res.render('urls_show', templateVars);
   }
   else {
@@ -191,21 +187,26 @@ app.get('/urls/:id', (req, res) => {
 app.post('/urls/:id', (req, res) => {
   let shortURL = req.params.id;
   let longURL = urlDatabase[shortURL];
-  let userid = req.session.userid;
+  let userId = req.session.userId;
 
+  if(urlDatabase[shortURL].userId !== userId) {
+    res.send('You do not have a permission to edit');
+  }
+  else {
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    res.redirect('/urls');
+  }
 
-
-  res.redirect('/urls/');
 });
 
 // delete url process
 app.delete('/urls/:id/delete', (req, res) => {
-  let shorK = req.params.id;
-  let userid = req.session.userid;
+  let shortKey = req.params.id;
+  let userId = req.session.userId;
 
-  if(userid) {
-      if (urlDatabase[shorK].user === userid) {
-          delete urlDatabase[shorK];
+  if(userId) {
+      if (urlDatabase[shortKey].userId === userId) {
+          delete urlDatabase[shortKey];
           res.redirect('/urls/');
         }
       else {
@@ -222,9 +223,10 @@ app.delete('/urls/:id/delete', (req, res) => {
 
 // login page
 app.get('/login', (req, res) => {
+  let userId = req.session.userId;
   let templateVars = {
-    users,
-    userid: req.session.userid
+    user: users[userId],
+    userId
   };
 
   res.render('login', templateVars);
@@ -243,7 +245,7 @@ app.post('/login', (req, res) => {
     res.status(403).send('Error 403: password is not valid');
   }
   else {
-    req.session.userid = id;
+    req.session.userId = id;
     res.redirect('/urls');
   }
 
@@ -257,7 +259,8 @@ app.post('/logout', (req, res) => {
 
 //register page
 app.get('/register', (req, res) => {
-  let templateVars = { users, userid: req.session.userid};
+  let userId = req.session.userId;
+  let templateVars = { user: users[userId], userId};
   res.render('urls_email', templateVars);
 });
 
@@ -267,12 +270,12 @@ app.post('/register', (req, res) => {
   let password = req.body.password;
   let hashedPassword = bcrypt.hashSync(password, 10);
   let id = generateRandomString(10);
-  const userfind = userthere(email);
+  const userFind = userThere(email);
 
   if(email === '' || password === '') {
     res.status(400).send('Error: 400');
     }
-  else if (userfind) {
+  else if (userFind) {
     res.status(400).send('Error: 400 Email already exist');
     }
 
@@ -282,7 +285,7 @@ app.post('/register', (req, res) => {
       email: email,
       password: hashedPassword
     };
-    req.session.userid = id;
+    req.session.userId = id;
     res.redirect('/urls/');
   }
 
